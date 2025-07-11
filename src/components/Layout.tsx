@@ -1,31 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { 
   LayoutDashboard, 
   Wheat, 
   CloudRain, 
   TrendingUp, 
   Satellite, 
-  LogOut,
-  Sprout,
-  MessageCircle
+  MessageCircle,
+  Sprout // <-- Add missing import
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  React.useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user, navigate]);
-
-  if (!user) {
-    return null;
-  }
+  // Chatbot state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<{ role: string; text: string }[]>([]);
 
   const navigationItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -35,26 +27,11 @@ const Layout: React.FC = () => {
     { icon: Satellite, label: 'Sensor Data', path: '/sensor-data' }
   ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const [chatOpen, setChatOpen] = React.useState(false);
-  const [chatInput, setChatInput] = React.useState('');
-  const [chatMessages, setChatMessages] = React.useState<Array<{role: 'user'|'ai', text: string}>>([
-    { role: 'ai', text: 'Hi! I am your AgriAdvisor AI Assistant. How can I help you today?' }
-  ]);
-
+  // Dummy chat handler
   const handleChatSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    setChatMessages(msgs => [
-      ...msgs,
-      { role: 'user', text: chatInput },
-      // Mock AI response
-      { role: 'ai', text: 'AI: This is a demo response. I can answer questions about crops, weather, prices, and more!' }
-    ]);
+    setChatMessages([...chatMessages, { role: 'user', text: chatInput }]);
     setChatInput('');
   };
 
@@ -93,25 +70,6 @@ const Layout: React.FC = () => {
             );
           })}
         </nav>
-
-        <div className="absolute bottom-0 w-64 p-6 border-t border-gray-200 bg-white">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-medium">{user.name[0]}</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-800">{user.name}</p>
-              <p className="text-xs text-gray-600 capitalize">{user.role}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Logout</span>
-          </button>
-        </div>
       </div>
 
       {/* Main Content */}

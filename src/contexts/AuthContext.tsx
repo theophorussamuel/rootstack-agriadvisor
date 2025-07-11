@@ -12,7 +12,6 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   signup: (userData: any) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   loading: boolean;
@@ -45,31 +44,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
-    try {
-      const response = await axios.post('http://localhost:3001/api/login', {
-        email,
-        password
-      });
-      
-      if (response.data.success) {
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        return { success: true };
-      }
-      return { success: false, message: response.data.message || 'Login failed' };
-    } catch (error) {
-      console.error('Login error:', error);
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          return { success: false, message: 'Invalid email or password' };
-        }
-        return { success: false, message: error.response?.data?.message || 'Login failed' };
-      }
-      return { success: false, message: 'Network error. Please try again.' };
-    }
-  };
-
   const signup = async (userData: any): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await axios.post('http://localhost:3001/api/signup', userData);
@@ -95,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
